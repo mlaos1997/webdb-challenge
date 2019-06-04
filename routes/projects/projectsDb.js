@@ -18,11 +18,25 @@ async function get() {
     return projects;
 };
 
-function getById(id) {
-    return db('projects')
+async function getById(id) {
+   const project = await db('projects')
         .select({id: "projects.id", name: "projects.name", description: "projects.description", completed: "projects.completed"})
         .where({"projects.id": id})
         .first();
+    project.actions = await db('actions')
+    .select({ id: 'actions.id', description: 'actions.description', notes: 'actions.notes', completed: 'actions.completed'})
+    .where({
+        'actions.project_id': id
+    });
+    project.completed === 1
+    ? (project.completed = true)
+    : (project.completed = false);
+    project.actions.forEach(action => {
+        action.completed === 1
+        ? (action.completed = true)
+        : (action.completed = false);
+    });
+    return project;
 };
 
 async function insert(project) {
